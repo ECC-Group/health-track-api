@@ -22,20 +22,13 @@ public class User {
     @Column(nullable = false)
     private int age;
 
-    @Column(nullable = false)
-    private double height;
-
-    @Column(nullable = false)
-    private double weight;
-
-    public User(Integer id, String name, String email, String password, int age, double height, double weight) {
+    public User(Integer id, String name, String email, String password, int age) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.age = age;
-        this.height = height;
-        this.weight = weight;
+
     }
 
     public User() {
@@ -81,19 +74,4 @@ public class User {
         this.age = age;
     }
 
-    public double getHeight() {
-        return height;
-    }
-
-    public void setHeight(double height) {
-        this.height = height;
-    }
-
-    public double getWeight() {
-        return weight;
-    }
-
-    public void setWeight(double weight) {
-        this.weight = weight;
-    }
 }
