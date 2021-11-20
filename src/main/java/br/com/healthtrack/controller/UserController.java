@@ -2,14 +2,13 @@ package br.com.healthtrack.controller;
 
 import br.com.healthtrack.dto.UserResponseDto;
 import br.com.healthtrack.entity.User;
+import br.com.healthtrack.repository.UserRepository;
+import javassist.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-import br.com.healthtrack.repository.UserRepository;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
@@ -26,6 +25,37 @@ public class UserController {
         user.setPassword(encoder.encode(user.getPassword()));
         userRepository.save(user);
         return new ResponseEntity<>(UserResponseDto.transformInDto(user), HttpStatus.CREATED);
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable("id") int id) throws NotFoundException {
+        User foundUser = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
+
+        return new ResponseEntity<>(UserResponseDto.transformInDto(foundUser), HttpStatus.OK);
+    }
+
+    @PutMapping("user/edit/{id}")
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable("id") int id, @Valid @RequestBody User user) throws NotFoundException {
+        User userToBeUpdate = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
+
+        userToBeUpdate.setName(user.getName());
+        userToBeUpdate.setEmail(user.getEmail());
+        userToBeUpdate.setAge(user.getAge());
+        userToBeUpdate.setPassword(encoder.encode(user.getPassword()));
+
+        userRepository.save(userToBeUpdate);
+        return new ResponseEntity<>(UserResponseDto.transformInDto(userToBeUpdate), HttpStatus.OK);
+    }
+
+    @DeleteMapping("user/exclude/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteUser(@PathVariable("id") int id) throws NotFoundException {
+        User userToBeDeleted = userRepository.findById(id).
+                orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
+
+        userRepository.delete(userToBeDeleted);
     }
 
 
