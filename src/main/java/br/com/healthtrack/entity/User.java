@@ -1,8 +1,9 @@
-package entity;
+package br.com.healthtrack.entity;
 
 import javax.persistence.*;
 
 @Entity
+@Table(name = "T_USER")
 public class User {
 
     @Id
