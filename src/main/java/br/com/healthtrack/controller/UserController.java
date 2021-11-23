@@ -1,5 +1,7 @@
 package br.com.healthtrack.controller;
 
+import br.com.healthtrack.dto.UserLoginRequestDto;
+import br.com.healthtrack.dto.UserLoginResponseDto;
 import br.com.healthtrack.dto.UserResponseDto;
 import br.com.healthtrack.entity.User;
 import br.com.healthtrack.repository.UserRepository;
@@ -35,7 +37,7 @@ public class UserController {
         return new ResponseEntity<>(UserResponseDto.transformInDto(foundUser), HttpStatus.OK);
     }
 
-    @PutMapping("user/edit/{id}")
+    @PutMapping("user/{id}")
     public ResponseEntity<UserResponseDto> updateUser(@PathVariable("id") int id, @Valid @RequestBody User user) throws NotFoundException {
         User userToBeUpdate = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
@@ -49,13 +51,26 @@ public class UserController {
         return new ResponseEntity<>(UserResponseDto.transformInDto(userToBeUpdate), HttpStatus.OK);
     }
 
-    @DeleteMapping("user/exclude/{id}")
+    @DeleteMapping("user/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(@PathVariable("id") int id) throws NotFoundException {
         User userToBeDeleted = userRepository.findById(id).
                 orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
 
         userRepository.delete(userToBeDeleted);
+    }
+
+    @PostMapping("user/login")
+    public ResponseEntity<UserLoginResponseDto> userLogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
+        User userFromDB = userRepository.findByEmail(userLoginRequestDto.getEmail());
+
+        if (encoder.matches(userFromDB.getPassword(), userLoginRequestDto.getPassword())) {
+
+            return new ResponseEntity<>(UserLoginResponseDto.transformInDto(User.fromDto(userLoginRequestDto)), HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
     }
 
 

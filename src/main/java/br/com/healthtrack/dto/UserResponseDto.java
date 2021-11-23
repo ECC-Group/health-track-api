@@ -4,11 +4,13 @@ import br.com.healthtrack.entity.User;
 
 public class UserResponseDto {
 
+    private Integer userId;
     private String name;
     private String email;
     private int age;
 
-    public UserResponseDto(String name, String email, int age) {
+    public UserResponseDto(Integer userId, String name, String email, int age) {
+        this.userId = userId;
         this.name = name;
         this.email = email;
         this.age = age;
@@ -16,6 +18,7 @@ public class UserResponseDto {
 
     public static UserResponseDto transformInDto(User user) {
         return new UserResponseDto(
+                user.getUserId(),
                 user.getName(),
                 user.getEmail(),
                 user.getAge()
@@ -44,5 +47,13 @@ public class UserResponseDto {
 
     public void setAge(int age) {
         this.age = age;
+    }
+
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

@@ -1,29 +1,39 @@
 package br.com.healthtrack.entity;
 
+import br.com.healthtrack.dto.UserLoginRequestDto;
+
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "T_USER")
 public class User {
 
     @Id
+    @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+    private Integer userId;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String password;
 
     @Column(nullable = false)
     private int age;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Weight> weights;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Workout> workouts;
+
     public User(Integer id, String name, String email, String password, int age) {
-        this.id = id;
+        this.userId = id;
         this.name = name;
         this.email = email;
         this.password = password;
@@ -34,12 +44,21 @@ public class User {
     public User() {
     }
 
-    public Integer getId() {
-        return id;
+    public static User fromDto(UserLoginRequestDto userLoginRequestDto) {
+        User user = new User();
+        user.setPassword(userLoginRequestDto.getPassword());
+        user.setEmail(userLoginRequestDto.getEmail());
+        user.setUserId(user.getUserId());
+
+        return user;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public Integer getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getName() {
