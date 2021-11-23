@@ -13,8 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController()
+@CrossOrigin(origins = "http://localhost:3000")
 public class UserController {
 
     @Autowired
@@ -29,18 +31,18 @@ public class UserController {
         return new ResponseEntity<>(UserResponseDto.transformInDto(user), HttpStatus.CREATED);
     }
 
-    @GetMapping("/user/{id}")
-    public ResponseEntity<UserResponseDto> getUser(@PathVariable("id") int id) throws NotFoundException {
-        User foundUser = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<UserResponseDto> getUser(@PathVariable Integer userId) throws NotFoundException {
+        User foundUser = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + userId));
 
         return new ResponseEntity<>(UserResponseDto.transformInDto(foundUser), HttpStatus.OK);
     }
 
-    @PutMapping("user/{id}")
-    public ResponseEntity<UserResponseDto> updateUser(@PathVariable("id") int id, @Valid @RequestBody User user) throws NotFoundException {
-        User userToBeUpdate = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + id));
+    @PutMapping("/user/{userId}")
+    public ResponseEntity<UserResponseDto> updateUser(@PathVariable Integer userId, @Valid @RequestBody User user) throws NotFoundException {
+        User userToBeUpdate = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("Usuario não encontrado para esse id: " + userId));
 
         userToBeUpdate.setName(user.getName());
         userToBeUpdate.setEmail(user.getEmail());
@@ -51,7 +53,7 @@ public class UserController {
         return new ResponseEntity<>(UserResponseDto.transformInDto(userToBeUpdate), HttpStatus.OK);
     }
 
-    @DeleteMapping("user/{id}")
+    @DeleteMapping("/user/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteUser(@PathVariable("id") int id) throws NotFoundException {
         User userToBeDeleted = userRepository.findById(id).
@@ -60,16 +62,18 @@ public class UserController {
         userRepository.delete(userToBeDeleted);
     }
 
-    @PostMapping("user/login")
+    @PostMapping("/user/login")
     public ResponseEntity<UserLoginResponseDto> userLogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
-        User userFromDB = userRepository.findByEmail(userLoginRequestDto.getEmail());
 
-        if (encoder.matches(userFromDB.getPassword(), userLoginRequestDto.getPassword())) {
+        if (userRepository.findByEmail(userLoginRequestDto.getEmail()).isPresent()) {
+            User userFromDB = userRepository.findByEmail(userLoginRequestDto.getEmail()).get();
+            if (encoder.matches(userLoginRequestDto.getPassword(), userFromDB.getPassword())) {
 
-            return new ResponseEntity<>(UserLoginResponseDto.transformInDto(User.fromDto(userLoginRequestDto)), HttpStatus.OK);
+                return new ResponseEntity<>(UserLoginResponseDto.transformInDto(userFromDB), HttpStatus.OK);
+            }
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
     }
 
