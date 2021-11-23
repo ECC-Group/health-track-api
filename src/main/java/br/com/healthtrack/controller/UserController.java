@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Optional;
 
 @RestController()
 @CrossOrigin(origins = "http://localhost:3000")
@@ -63,14 +64,16 @@ public class UserController {
 
     @PostMapping("/user/login")
     public ResponseEntity<UserLoginResponseDto> userLogin(@Valid @RequestBody UserLoginRequestDto userLoginRequestDto) {
-        User userFromDB = userRepository.findByEmail(userLoginRequestDto.getEmail());
 
-        if (encoder.matches(userLoginRequestDto.getPassword(), userFromDB.getPassword())) {
+        if (userRepository.findByEmail(userLoginRequestDto.getEmail()).isPresent()) {
+            User userFromDB = userRepository.findByEmail(userLoginRequestDto.getEmail()).get();
+            if (encoder.matches(userLoginRequestDto.getPassword(), userFromDB.getPassword())) {
 
-            return new ResponseEntity<>(UserLoginResponseDto.transformInDto(userFromDB), HttpStatus.OK);
+                return new ResponseEntity<>(UserLoginResponseDto.transformInDto(userFromDB), HttpStatus.OK);
+            }
         }
 
-        return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 
     }
 
